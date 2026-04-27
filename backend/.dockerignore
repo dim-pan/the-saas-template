@@ -1,0 +1,16 @@
+.venv
+.direnv
+.pytest_cache
+.ruff_cache
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+.env
+.env.*
+
+supabase
+tests
+README.md

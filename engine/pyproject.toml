@@ -1,0 +1,70 @@
+[build-system]
+requires = ["setuptools >= 77.0.3"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[project]
+name = "engine"
+version = "0.1.0"
+description = "The Engine"
+readme = "README.md"
+requires-python = ">=3.12"
+
+# Only dependencies required for running `engine` Cloud Run service
+# should be listed here
+dependencies = [
+    "boto3>=1.42.46",
+    "boto3-stubs[essential]>=1.42.46",
+    "fastapi[standard]>=0.125.0",
+    "httpx>=0.28.1",
+    "pydantic>=2.12.5",
+    "pyright>=1.1.407",
+    "uvicorn>=0.40.0",
+]
+
+[project.optional-dependencies]
+# Only include dependencies that are for testing
+test = []
+# Only include dependencies that are for development (linting, formatting, devex, etc.)
+dev = ["pre-commit>=4.5.1", "ruff>=0.15.0"]
+
+[tool.ruff]
+include = ["src/**/*.py", "tests/**/*.py"]
+line-length = 100
+indent-width = 4
+
+[tool.ruff.lint]
+select = [
+    "F",     # Pyflakes
+    "I",     # isort
+    "E",     # pycodestyle errors
+    "W",     # pycodestyle warnings
+    "UP006", # Prohibits typing.List, Dict, etc.
+]
+ignore = [
+    "E501", # line-too-long, conflicting with formatter
+    "E731",
+] # assigning lambda's to variables is a good idea
+
+[tool.ruff.format]
+quote-style = "single"
+indent-style = "space"
+skip-magic-trailing-comma = false
+
+[tool.ruff.lint.isort]
+known-local-folder = [
+    "src",
+    "engine",
+] # Necessary to separate imports for local package
+
+[tool.pyright]
+venvPath = "."
+include = ["src"]
+exclude = ["out", "venv"]
+pythonVersion = "3.12"
+typeCheckingMode = "standard"

@@ -1,0 +1,43 @@
+import os
+
+# Centralized environment configuration.
+# Keep this intentionally lightweight (simple constants) for now.
+
+ENV = os.getenv('ENV', 'dev')
+
+DEV_AUTH_BYPASS_ENABLED = os.getenv('DEV_AUTH_BYPASS_ENABLED', 'false').strip().lower() == 'true'
+DEV_DEFAULT_USER_ID = os.getenv('DEV_DEFAULT_USER_ID')
+
+LOG_LEVEL = os.getenv('LOG_LEVEL')
+
+SUPABASE_URL = os.getenv('SUPABASE_URL')
+SUPABASE_KEY = os.getenv('SUPABASE_KEY')
+SUPABASE_JWKS_URL = os.getenv('SUPABASE_JWKS_URL')
+
+# Stripe configuration
+STRIPE_PUBLISHABLE_KEY = os.getenv('STRIPE_PUBLISHABLE_KEY')
+STRIPE_SECRET_KEY = os.getenv('STRIPE_SECRET_KEY')
+STRIPE_WEBHOOK_SECRET = os.getenv('STRIPE_WEBHOOK_SECRET')
+STRIPE_BILLING_PORTAL_CONFIGURATION_ID = os.getenv('STRIPE_BILLING_PORTAL_CONFIGURATION_ID')
+
+# Slack
+SLACK_PAYMENTS_WEBHOOK_URL = os.getenv('SLACK_PAYMENTS_WEBHOOK_URL')
+
+# Cloudflare (optional; used by connector factory)
+CLOUDFLARE_ACCOUNT_ID = os.getenv('CLOUDFLARE_ACCOUNT_ID', '')
+CLOUDFLARE_API_TOKEN = os.getenv('CLOUDFLARE_API_TOKEN', '')
+CLOUDFLARE_ACCESS_KEY = os.getenv('CLOUDFLARE_ACCESS_KEY', '')
+CLOUDFLARE_SECRET_ACCESS_KEY = os.getenv('CLOUDFLARE_SECRET_ACCESS_KEY', '')
+CLOUDFLARE_R2_BUCKET = os.getenv('CLOUDFLARE_R2_BUCKET', '')
+CLOUDFLARE_IMAGES_SIGNING_KEY = os.getenv('CLOUDFLARE_IMAGES_SIGNING_KEY', '')
+CLOUDFLARE_STREAM_CUSTOMER_SUBDOMAIN = os.getenv(
+    'CLOUDFLARE_STREAM_CUSTOMER_SUBDOMAIN',
+    '',
+)
+
+# AWS
+AWS_REGION = os.getenv('AWS_REGION')
+AWS_SQS_QUEUE_URL = os.getenv('AWS_SQS_QUEUE_URL')
+
+# Engine
+BACKEND_SECRET = os.getenv('BACKEND_SECRET')

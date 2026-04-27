@@ -1,0 +1,55 @@
+{
+  "currency": "usd",
+  "subscription_tiers": [
+    {
+      "key_prefix": "tier_starter",
+      "name": "Starter",
+      "description": "Starter plan",
+      "plan_family": "default",
+      "rank": 1,
+      "yearly_rank": 4,
+      "monthly_unit_amount": 3900,
+      "yearly_unit_amount": 46800,
+      "feature_set": ["Feature A", "Feature B"],
+      "default_stripe_coupon_id": null,
+      "override_stripe_coupon_id": null
+    },
+    {
+      "key_prefix": "tier_pro",
+      "name": "Pro",
+      "description": "Pro plan",
+      "plan_family": "default",
+      "rank": 2,
+      "yearly_rank": 5,
+      "monthly_unit_amount": 9900,
+      "yearly_unit_amount": 118800,
+      "feature_set": ["Everything in Basic", "Feature C", "Feature D"],
+      "default_stripe_coupon_id": null,
+      "override_stripe_coupon_id": null
+    },
+    {
+      "key_prefix": "tier_growth",
+      "name": "Growth",
+      "description": "Growth plan",
+      "plan_family": "default",
+      "rank": 3,
+      "yearly_rank": 6,
+      "monthly_unit_amount": 29900,
+      "yearly_unit_amount": 358800,
+      "feature_set": ["Everything in Pro", "SLA", "Dedicated support"],
+      "default_stripe_coupon_id": null,
+      "override_stripe_coupon_id": null
+    }
+  ],
+  "one_off_items": [
+    {
+      "key": "one_off_10_usd",
+      "name": "Item",
+      "description": "One-off payment",
+      "unit_amount": 1000,
+      "feature_set": [],
+      "default_stripe_coupon_id": null,
+      "override_stripe_coupon_id": null
+    }
+  ]
+}

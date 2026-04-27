@@ -1,0 +1,50 @@
+[project]
+name = "backend"
+version = "0.1.0"
+description = "The Backend"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "boto3>=1.42.46",
+    "boto3-stubs[essential]>=1.42.46",
+    "fastapi[standard]>=0.125.0",
+    "httpx>=0.28.1",
+    "pydantic>=2.12.5",
+    "pyright>=1.1.407",
+    "python-jose[cryptography]>=3.5.0",
+    "python-multipart>=0.0.22",
+    "stripe>=14.3.0",
+    "supabase>=2.27.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.2",
+    "ruff>=0.15.0",
+    "python-dotenv>=1.0.1",
+    "pyright>=1.1.408",
+    "pre-commit>=4.5.1",
+
+]
+
+[tool.ruff]
+line-length = 100
+indent-width = 4
+
+[tool.ruff.format]
+quote-style = "single"
+indent-style = "space"
+skip-magic-trailing-comma = false
+
+[tool.ruff.lint.flake8-annotations]
+ignore-fully-untyped = true
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+
+[tool.pyright]
+include = ["app"]
+exclude = ["tests"]
+pythonVersion = "3.12"
+typeCheckingMode = "standard"

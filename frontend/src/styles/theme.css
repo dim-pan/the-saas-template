@@ -1,0 +1,38 @@
+@theme {
+  /* Base / surfaces */
+  --color-background: #ffffff; /* white */
+  --color-foreground: #0f172a; /* slate-900 */
+  --color-surface: #ffffff; /* cards / panels */
+  --color-surface-2: #f8fafc; /* slate-50 */
+
+  /* Muted */
+  --color-muted: #f1f5f9; /* slate-100 */
+  --color-muted-foreground: #64748b; /* slate-500 */
+
+  /* Brand / actions */
+  --color-primary: #2563eb; /* blue-600 */
+  --color-primary-foreground: #ffffff;
+
+  --color-secondary: #f1f5f9; /* slate-100 */
+  --color-secondary-foreground: #0f172a; /* slate-900 */
+
+  --color-accent: #0891b2; /* cyan-600 */
+  --color-accent-foreground: #ffffff;
+
+  /* UI chrome */
+  --color-border: #e2e8f0; /* slate-200 */
+  --color-ring: #60a5fa; /* blue-400 */
+
+  /* Feedback */
+  --color-danger: #dc2626; /* red-600 */
+  --color-danger-foreground: #ffffff;
+
+  --color-success: #16a34a; /* green-600 */
+  --color-success-foreground: #ffffff;
+
+  --color-warning: #d97706; /* amber-600 */
+  --color-warning-foreground: #ffffff;
+
+  --color-info: #0284c7; /* sky-600 */
+  --color-info-foreground: #ffffff;
+}

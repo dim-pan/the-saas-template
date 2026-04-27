@@ -1,0 +1,10 @@
+@import 'tailwindcss';
+
+@import './styles/theme.css';
+
+@layer base {
+  html,
+  body {
+    overscroll-behavior: none;
+  }
+}

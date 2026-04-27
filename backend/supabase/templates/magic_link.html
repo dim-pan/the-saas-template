@@ -1,0 +1,10 @@
+<h2>Magic Link</h2>
+
+<p>Follow this link to login please:</p>
+<p>
+  <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email">
+    Log In
+  </a>
+</p>
+
+<p><strong>Alternatively, enter the code:</strong> {{ .Token }}</p>

@@ -1,0 +1,35 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      # To bake the Infisical CLI into the image, build with:
+      #   docker compose build --build-arg USE_INFISICAL=1
+      # args:
+      #   USE_INFISICAL: "1"
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./backend/.env
+    environment:
+      SUPABASE_URL: http://host.docker.internal:54321
+    # To pull secrets from Infisical at container start, set these (and
+    # rebuild with USE_INFISICAL=1 above). The infisical-auth.sh entrypoint
+    # skips Infisical entirely when these are empty.
+    #   INFISICAL_CLIENT_ID, INFISICAL_CLIENT_SECRET, INFISICAL_PROJECT_ID,
+    #   INFISICAL_SECRET_ENV, INFISICAL_DOMAIN
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      # args:
+      #   USE_INFISICAL: "1"
+    ports:
+      - "5173:5173"
+    env_file:
+      - ./frontend/.env
+    environment:
+      VITE_BACKEND_URL: http://localhost:8000
+    depends_on:
+      - backend

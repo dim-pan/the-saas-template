@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git *)",
+      "WebSearch",
+      "Bash(grep -rniE \"\\(secret|api[_-]?key|password|token|bearer\\)\\\\s*[:=]\\\\s*['\\\\\"][a-zA-Z0-9_-]{16,}\" --exclude-dir=node_modules --exclude-dir=.venv --exclude-dir=.git --exclude-dir=dist --exclude-dir=build --exclude-dir=.claude)",
+      "Bash(grep -rniE \"https?://[a-z0-9.-]+\\\\.[a-z]{2,}\" --include=\"*.py\" --include=\"*.ts\" --include=\"*.tsx\" --include=\"*.json\" --include=\"*.md\" --include=\"*.toml\" --include=\"*.yml\" --include=\"*.yaml\" --include=\"*.html\" --exclude-dir=node_modules --exclude-dir=.venv --exclude-dir=.git --exclude-dir=dist)"
+    ]
+  }
+}
