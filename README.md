@@ -4,7 +4,8 @@
 
 If you find this useful, **drop a star** - it helps a lot.
 
-<img width="300" alt="image" src="https://github.com/user-attachments/assets/6a9a768a-8d71-4f3c-876c-b99f046bdea2" />
+<img width="450" alt="image" src="https://github.com/user-attachments/assets/6a9a768a-8d71-4f3c-876c-b99f046bdea2" />
+
 **Contributors:** Dimi ([@dim-pan](https://github.com/dim-pan)) · Tinos ([@pTinosq](https://github.com/pTinosq)) · Alex ([@agentf1ash](https://github.com/agentf1ash))
 
 ---
