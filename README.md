@@ -1,8 +1,8 @@
-# The SaaS Template — Production-ready SaaS template
+# The SaaS Template - Production-ready SaaS template
 
 **Stop rebuilding the same SaaS plumbing.** The SaaS Template is an opinionated, batteries-included template for shipping a real multi-tenant SaaS — billing, auth, async jobs, webhooks, and infra — already wired up so you can start building your actual product on day one.
 
-If you find this useful, **drop a star** — it helps a lot.
+If you find this useful, **drop a star** - it helps a lot.
 
 ---
 
@@ -21,16 +21,16 @@ If you find this useful, **drop a star** — it helps a lot.
 
 ## Tech stack
 
-| Layer       | Stack                                                              |
-| ----------- | ------------------------------------------------------------------ |
-| Frontend    | React 19, Vite, TanStack Router/Query, Tailwind v4, Zod, TypeScript |
-| Backend     | FastAPI, UV, Supabase client, Stripe, boto3 (SQS), Python 3.12     |
-| Engine      | FastAPI gateway + async SQS worker, Pydantic v2                    |
-| Database    | Supabase (Postgres), auto-generated Python types                   |
-| Auth        | Supabase Auth (PKCE) + JWT/JWKS                                     |
-| Payments    | Stripe (checkout, portal, webhooks)                                 |
-| Storage     | Cloudflare R2 / Images / Stream                                     |
-| Secrets     | `.env` (default) or Infisical (optional)                            |
+| Layer    | Stack                                                               |
+| -------- | ------------------------------------------------------------------- |
+| Frontend | React 19, Vite, TanStack Router/Query, Tailwind v4, Zod, TypeScript |
+| Backend  | FastAPI, UV, Supabase client, Stripe, boto3 (SQS), Python 3.12      |
+| Engine   | FastAPI gateway + async SQS worker, Pydantic v2                     |
+| Database | Supabase (Postgres), auto-generated Python types                    |
+| Auth     | Supabase Auth (PKCE) + JWT/JWKS                                     |
+| Payments | Stripe (checkout, portal, webhooks)                                 |
+| Storage  | Cloudflare R2 / Images / Stream                                     |
+| Secrets  | `.env` (default) or Infisical (optional)                            |
 
 ## Architecture at a glance
 
@@ -84,13 +84,13 @@ Run `infisical login` and `infisical init` first.
 
 ## Useful local URLs
 
-| URL                            | What                       |
-| ------------------------------ | -------------------------- |
-| http://localhost:5173          | Frontend                   |
-| http://localhost:8000/docs     | Backend API (Swagger)      |
-| http://localhost:8001          | Engine webhook gateway     |
-| http://localhost:54323         | Supabase Studio            |
-| http://localhost:54324         | Mailpit (local email)      |
+| URL                        | What                   |
+| -------------------------- | ---------------------- |
+| http://localhost:5173      | Frontend               |
+| http://localhost:8000/docs | Backend API (Swagger)  |
+| http://localhost:8001      | Engine webhook gateway |
+| http://localhost:54323     | Supabase Studio        |
+| http://localhost:54324     | Mailpit (local email)  |
 
 ## Conventions
 
