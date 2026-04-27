@@ -4,6 +4,8 @@
 
 If you find this useful, **drop a star** - it helps a lot.
 
+**Contributors:** Dimi ([@dim-pan](https://github.com/dim-pan)) · Tinos ([@pTinosq](https://github.com/pTinosq)) · Alex ([@agentf1ash](https://github.com/agentf1ash))
+
 ---
 
 ## What you get out of the box
