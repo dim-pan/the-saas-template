@@ -1,4 +1,5 @@
 import logging
+import os
 from functools import lru_cache
 
 import boto3
@@ -17,10 +18,16 @@ class SQSConnector:
     @classmethod
     @lru_cache(maxsize=1)
     def get_client(cls) -> SQSClient:
-        """Return a cached boto3 SQS client."""
+        """Return a cached boto3 SQS client.
+
+        Honors AWS_ENDPOINT_URL when set (e.g. local ElasticMQ at http://localhost:9324).
+        Unset in production → boto3 talks to the real AWS endpoint.
+        """
+        endpoint_url = os.getenv('AWS_ENDPOINT_URL') or None
         client: SQSClient = boto3.client(
             'sqs',
             region_name=AWS_REGION,
+            endpoint_url=endpoint_url,
         )
 
         return client

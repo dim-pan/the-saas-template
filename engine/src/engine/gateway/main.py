@@ -51,6 +51,7 @@ async def webhook(request: Request) -> dict[str, Any]:
         logger.info('Processor: %s', processor)
         return await processor.process(context)
     except ValueError as error:
+        logger.warning('Webhook rejected (400): %s', error)
         raise HTTPException(status_code=400, detail=str(error)) from error
     except Exception as error:
         logger.exception('Unexpected gateway error while processing webhook: %s', error)

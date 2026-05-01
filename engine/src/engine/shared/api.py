@@ -10,7 +10,7 @@ from tenacity import (
 )
 
 from engine.shared.config import BACKEND_SECRET, BACKEND_URL
-from engine.shared.schemas import JobMessage, TaskStatus
+from engine.shared.schemas import JobLookupResponse, TaskStatus
 
 logger = logging.getLogger(__name__)
 
@@ -92,7 +92,7 @@ async def update_job_result_data(
         response.raise_for_status()
 
 
-async def get_job_by_external_id(external_id: str) -> JobMessage | None:
+async def get_job_by_external_id(external_id: str) -> JobLookupResponse | None:
     async with httpx.AsyncClient() as client:
         url = f'{BACKEND_URL}/api/v1/jobs/lookup/by-external-id/{external_id}'
         response = await client.get(
@@ -105,4 +105,4 @@ async def get_job_by_external_id(external_id: str) -> JobMessage | None:
             return None
 
         response.raise_for_status()
-        return JobMessage.model_validate(response.json())
+        return JobLookupResponse.model_validate(response.json())

@@ -12,7 +12,7 @@ class TaskStatus(Enum):
     FAILED = 'failed'
 
 
-# This must be kept in sync with the jobs table in the backend
+# SQS message contract (backend → worker). Strict: drift is a backend bug.
 class JobMessage(BaseModel):
     model_config = ConfigDict(extra='forbid')
 
@@ -29,6 +29,12 @@ class JobMessage(BaseModel):
     # TODO: each job should have a different data schema
     # We can use a union type to represent the different schemas
     data: dict[str, Any]
+
+
+# Response from GET /jobs/lookup/by-external-id/{external_id}. Strict (inherits forbid)
+# so new backend columns force an engine update.
+class JobLookupResponse(JobMessage):
+    result_data: dict[str, Any] = {}
 
 
 class WebhookContext(BaseModel):

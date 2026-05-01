@@ -14,8 +14,9 @@
 #     BR  free shell at repo root
 #         (optional split: ngrok http --url=<URL> 8000)
 #   window "engine":
-#     L   engine   : make dev-gateway (port 8001)
-#     R   engine   : make dev-worker
+#     L   engine     : make dev-gateway (port 8001)
+#     M   engine     : make dev-worker
+#     R   elasticmq  : local SQS emulator on :9324 (UI :9325)
 
 set -euo pipefail
 
@@ -78,9 +79,11 @@ TR=$(tmux split-window -h -t "$TL" -P -F "#{pane_id}")
 BL=$(tmux split-window -v -t "$TL" -P -F "#{pane_id}")
 BR=$(tmux split-window -v -t "$TR" -P -F "#{pane_id}")
 
-# DB-ready gate (same pattern as lucent_template_layout.sh)
+# Readiness gates (same pattern as lucent_template_layout.sh)
 DB_SIGNAL="sst_db_ready"
+SQS_SIGNAL="sst_sqs_ready"
 tmux set-environment -g SST_DB_STATUS "" 2>/dev/null || true
+tmux set-environment -g SST_SQS_STATUS "" 2>/dev/null || true
 
 # TL: start Supabase, then signal the gate when port 54321 is reachable
 tmux send-keys -t "$TL" "cd \"$PROJECT_DIR/backend\" && supabase start & sleep 1; timeout=300; start_ts=\$(date +%s); ready=false; while true; do if command -v nc >/dev/null 2>&1 && nc -z 127.0.0.1 54321 2>/dev/null; then ready=true; break; fi; if curl -s http://127.0.0.1:54321 >/dev/null 2>&1; then ready=true; break; fi; if (( \$(date +%s) - start_ts >= timeout )); then break; fi; sleep 2; done; if [ \"\$ready\" = true ]; then tmux set-environment -g SST_DB_STATUS ok; else tmux set-environment -g SST_DB_STATUS fail; echo \"Timed out waiting for Supabase (300s)\"; fi; tmux wait-for -S \"$DB_SIGNAL\"" Enter
@@ -104,10 +107,20 @@ fi
 # ---- window 2: engine --------------------------------------------------------
 tmux new-window -t "$SESSION:" -n engine
 EL=$(tmux display-message -p -t "$SESSION:engine.0" "#{pane_id}")
-ER=$(tmux split-window -h -t "$EL" -P -F "#{pane_id}")
+EM=$(tmux split-window -h -t "$EL" -P -F "#{pane_id}")
+EQ=$(tmux split-window -h -t "$EM" -P -F "#{pane_id}")
+tmux select-layout -t "$SESSION:engine" even-horizontal
 
+# EQ: ElasticMQ (local SQS emulator). Background subshell polls port 9324 and signals
+# the gate; the docker container itself stays in the foreground of the pane (--rm cleans
+# up when the pane exits / tmux session is killed).
+tmux send-keys -t "$EQ" "( sleep 1; timeout=60; start_ts=\$(date +%s); ready=false; while true; do if command -v nc >/dev/null 2>&1 && nc -z 127.0.0.1 9324 2>/dev/null; then ready=true; break; fi; if (( \$(date +%s) - start_ts >= timeout )); then break; fi; sleep 1; done; if [ \"\$ready\" = true ]; then tmux set-environment -g SST_SQS_STATUS ok; else tmux set-environment -g SST_SQS_STATUS fail; echo \"Timed out waiting for ElasticMQ (60s)\"; fi; tmux wait-for -S \"$SQS_SIGNAL\" ) & docker rm -f sst-elasticmq >/dev/null 2>&1 || true; docker run --rm --name sst-elasticmq -p 9324:9324 -p 9325:9325 -v \"$PROJECT_DIR/scripts/elasticmq.conf:/opt/elasticmq.conf\" softwaremill/elasticmq-native:latest" Enter
+
+# EL: gateway — only needs DB.
 wait_then "$EL" "$PROJECT_DIR/engine" "make dev-gateway" "engine gateway"
-wait_then "$ER" "$PROJECT_DIR/engine" "make dev-worker"  "engine worker"
+
+# EM: worker — needs both DB (calls backend) and SQS (polls queue).
+tmux send-keys -t "$EM" "cd \"$PROJECT_DIR/engine\" && tmux wait-for \"$DB_SIGNAL\"; tmux wait-for \"$SQS_SIGNAL\"; db_status=\$(tmux show-environment -g SST_DB_STATUS 2>/dev/null | sed -E 's/^SST_DB_STATUS=//'); sqs_status=\$(tmux show-environment -g SST_SQS_STATUS 2>/dev/null | sed -E 's/^SST_SQS_STATUS=//'); if [ \"\$db_status\" = ok ] && [ \"\$sqs_status\" = ok ]; then make dev-worker; else echo \"Not starting worker (db=\$db_status sqs=\$sqs_status)\"; fi" Enter
 
 # Focus the supabase pane and attach
 tmux select-window -t "$SESSION:app"

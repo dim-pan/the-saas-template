@@ -1,4 +1,14 @@
 services:
+  elasticmq:
+    # Local SQS emulator. Boto3 clients in backend + engine honor AWS_ENDPOINT_URL
+    # and talk to this instead of real AWS. Web UI at :9325 for inspecting queues.
+    image: softwaremill/elasticmq-native:latest
+    ports:
+      - "9324:9324"
+      - "9325:9325"
+    volumes:
+      - ./scripts/elasticmq.conf:/opt/elasticmq.conf:ro
+
   backend:
     build:
       context: ./backend
@@ -13,6 +23,13 @@ services:
       - ./backend/.env
     environment:
       SUPABASE_URL: http://host.docker.internal:54321
+      AWS_ENDPOINT_URL: http://elasticmq:9324
+      AWS_SQS_QUEUE_URL: http://elasticmq:9324/000000000000/engine-jobs.fifo
+      AWS_REGION: elasticmq
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+    depends_on:
+      - elasticmq
     # To pull secrets from Infisical at container start, set these (and
     # rebuild with USE_INFISICAL=1 above). The infisical-auth.sh entrypoint
     # skips Infisical entirely when these are empty.
