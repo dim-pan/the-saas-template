@@ -127,9 +127,12 @@ Run `infisical login` and `infisical init` first.
 
 ```bash
 supabase migration new <NAME>     # create migration
-supabase migration up              # apply pending
+make db-migrate                    # apply pending migrations (non-destructive)
+make db-reset                      # wipe local DB + replay all migrations (DESTRUCTIVE)
 make dbgen-local                   # regenerate Python DB types
 ```
+
+> **After pulling new migrations:** run `make db-migrate` from `backend/`. `supabase start` alone reuses the existing Docker volume and won't apply new migration files, so without this step you'll see runtime errors like `column ... does not exist`. If your local schema has drifted (manual edits, partial replays), use `make db-reset` instead — it nukes local data and replays every migration from scratch.
 
 If you change Supabase email templates locally:
 

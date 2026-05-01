@@ -1,1 +1,12 @@
 .claude/settings.local.json
+
+# Environment files (never commit secrets — use .env.example as the template)
+.env
+.env.*
+!.env.example
+
+# Python build artifacts
+*.egg-info/
+__pycache__/
+*.pyc
+.venv/

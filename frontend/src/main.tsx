@@ -37,10 +37,10 @@ declare module '@tanstack/react-router' {
 const SENTRY_DSN = import.meta.env.VITE_SENTRY_DSN as string | undefined;
 const SENTRY_ENV = import.meta.env.VITE_ENV as string | undefined;
 
-const isSentryEnabled = SENTRY_DSN !== undefined;
+const isSentryEnabled = Boolean(SENTRY_DSN);
 
-if (isSentryEnabled && !SENTRY_DSN) {
-  throw new Error('Sentry DSN is not set (VITE_SENTRY_DSN)');
+if (!isSentryEnabled) {
+  console.warn('Sentry DSN not set, error tracking will not be initialized.');
 }
 
 Sentry.init({

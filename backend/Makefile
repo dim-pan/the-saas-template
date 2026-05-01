@@ -42,3 +42,11 @@ dbgen-local:
 	npx supabase gen types --lang=python --local | uv run python ./scripts/postprocess_db_types.py > ./app/database/types_autogen.py
 	uv run ruff check --fix ./app/database/types_autogen.py
 	uv run ruff format ./app/database/types_autogen.py
+
+# Apply any pending migrations to the running local Supabase DB. Non-destructive.
+db-migrate:
+	supabase migration up
+
+# Wipe the local Supabase DB and re-run every migration from scratch. DESTRUCTIVE — clears all local data.
+db-reset:
+	supabase db reset
