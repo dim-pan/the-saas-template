@@ -1,8 +1,16 @@
-import { Link } from '@tanstack/react-router';
+import { Link, type LinkProps } from '@tanstack/react-router';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { SignOutButton } from '@/components/auth/SignOutButton';
 
-export function LeftNav() {
+export interface NavigationItem extends LinkProps {
+  label: string;
+}
+
+export interface LeftNavProps {
+  navigation: NavigationItem[];
+}
+
+export function LeftNav(props: LeftNavProps) {
   const auth = useAuth();
 
   const userLabel = auth.user?.email ?? auth.user?.id ?? 'Signed in';
@@ -18,24 +26,15 @@ export function LeftNav() {
         {/* Middle */}
         <div className="flex-1 p-3">
           <nav className="flex flex-col gap-1">
-            <Link
-              to="/"
-              className="rounded-md px-3 py-2 text-sm text-foreground hover:bg-muted [&.active]:bg-muted [&.active]:font-medium"
-            >
-              Home
-            </Link>
-            <Link
-              to="/accounts"
-              className="rounded-md px-3 py-2 text-sm text-foreground hover:bg-muted [&.active]:bg-muted [&.active]:font-medium"
-            >
-              Account
-            </Link>
-            <Link
-              to="/upgrade"
-              className="rounded-md px-3 py-2 text-sm text-foreground hover:bg-muted [&.active]:bg-muted [&.active]:font-medium"
-            >
-              Pricing
-            </Link>
+            {props.navigation.map(({ label, ...linkProps }) => (
+              <Link
+                key={label}
+                {...linkProps}
+                className="rounded-md px-3 py-2 text-sm text-foreground hover:bg-muted [&.active]:bg-muted [&.active]:font-medium"
+              >
+                {label}
+              </Link>
+            ))}
           </nav>
         </div>
 

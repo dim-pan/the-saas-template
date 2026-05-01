@@ -7,7 +7,13 @@ import { Accounts } from './accounts';
 import { Pricing } from './pricing';
 import { AuthConfirmRoute } from './auth-confirm';
 import { supabase } from '@/supabase/client';
-import { LeftNav } from '@/components/layout/LeftNav';
+import { LeftNav, type NavigationItem } from '@/components/layout/LeftNav';
+
+const PROTECTED_NAVIGATION: NavigationItem[] = [
+  { label: 'Home', to: '/' },
+  { label: 'Account', to: '/accounts' },
+  { label: 'Pricing', to: '/upgrade' },
+];
 
 function RootLayout() {
   return (
@@ -38,7 +44,7 @@ const protectedLayout = createRoute({
   },
   component: () => (
     <div className="min-h-screen flex bg-background">
-      <LeftNav />
+      <LeftNav navigation={PROTECTED_NAVIGATION} />
       <main className="flex-1 min-w-0">
         <Outlet />
       </main>

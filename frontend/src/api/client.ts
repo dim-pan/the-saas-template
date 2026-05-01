@@ -14,9 +14,17 @@ export class ApiError extends Error {
 }
 
 function getBackendUrl() {
-  const backendUrl = import.meta.env.VITE_BACKEND_URL as string | undefined;
+  let backendUrl = import.meta.env.VITE_BACKEND_URL as string | undefined;
   if (!backendUrl) {
     throw new Error('Backend URL is not set (VITE_BACKEND_URL)');
+  }
+  // Avoid mixed content: if the app is on HTTPS, force HTTPS for the API too.
+  if (
+    typeof window !== 'undefined' &&
+    window.location.protocol === 'https:' &&
+    backendUrl.startsWith('http://')
+  ) {
+    backendUrl = backendUrl.replace(/^http:\/\//i, 'https://');
   }
   return backendUrl;
 }
