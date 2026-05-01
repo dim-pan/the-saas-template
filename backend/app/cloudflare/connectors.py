@@ -371,12 +371,26 @@ class CFImageConnector(CloudflareConnector):
         return AssetProvider.IMAGE
 
 
+class StreamVideoError(Exception):
+    """Raised when a Stream video is in errored state (424 / status=error)."""
+
+    def __init__(self, message: str, video_uid: str) -> None:
+        super().__init__(message)
+        self.video_uid = video_uid
+
+
 class CFStreamConnector(CloudflareConnector):
     DIRECT_UPLOAD_URL_TEMPLATE = (
         'https://api.cloudflare.com/client/v4/accounts/{account_id}/stream/direct_upload'
     )
+    VIDEO_DETAILS_URL_TEMPLATE = (
+        'https://api.cloudflare.com/client/v4/accounts/{account_id}/stream/{video_uid}'
+    )
     SIGNED_TOKEN_URL_TEMPLATE = (
         'https://api.cloudflare.com/client/v4/accounts/{account_id}/stream/{video_uid}/token'
+    )
+    DOWNLOADS_URL_TEMPLATE = (
+        'https://api.cloudflare.com/client/v4/accounts/{account_id}/stream/{video_uid}/downloads'
     )
 
     def __new__(
@@ -455,7 +469,48 @@ class CFStreamConnector(CloudflareConnector):
         video_uid = result.get('uid') or ''
         return (upload_url, video_uid)
 
-    def create_signed_token(self, video_uid: str, *, expires_in: int | None = None) -> str:
+    def get_video_status(self, video_uid: str) -> str:
+        """Return Stream video processing status: 'ready' | 'error' | 'queued' | 'inprogress'.
+        Raises StreamVideoError if the video is in error state (so callers can mark asset failed).
+        """
+        if not self.account_id or not self.api_token:
+            raise ValueError('Stream connector missing account_id or api_token')
+
+        url = self.VIDEO_DETAILS_URL_TEMPLATE.format(
+            account_id=self.account_id,
+            video_uid=video_uid,
+        )
+        headers = {'Authorization': f'Bearer {self.api_token}'}
+
+        with httpx.Client(timeout=30.0) as client:
+            response = client.get(url, headers=headers)
+            response.raise_for_status()
+            body: dict[str, Any] = response.json()
+        if not body.get('success'):
+            errors = body.get('errors', [])
+            logger.error('Cloudflare Stream get video failed: %s', errors)
+            raise RuntimeError('Stream video details request failed')
+
+        result = body.get('result') or {}
+        status = (result.get('status') or {}).get('state') or result.get('status') or ''
+        if isinstance(status, dict):
+            status = status.get('state', '')
+        status = str(status).lower()
+
+        if status == 'error':
+            raise StreamVideoError(
+                'Video processing failed. The file may be corrupted or in an unsupported format.',
+                video_uid=video_uid,
+            )
+        return status
+
+    def create_signed_token(
+        self,
+        video_uid: str,
+        *,
+        expires_in: int | None = None,
+        downloadable: bool = False,
+    ) -> str:
         if not self.account_id or not self.api_token:
             return ''
 
@@ -463,15 +518,23 @@ class CFStreamConnector(CloudflareConnector):
             account_id=self.account_id,
             video_uid=video_uid,
         )
-        headers = {'Authorization': f'Bearer {self.api_token}'}
+        headers = {
+            'Authorization': f'Bearer {self.api_token}',
+            'Content-Type': 'application/json',
+        }
 
-        payload: dict[str, int] | None = None
+        payload: dict[str, Any] = {}
         if expires_in is not None:
-            expires_at = int(time.time()) + expires_in
-            payload = {'exp': expires_at}
+            payload['exp'] = int(time.time()) + expires_in
+        if downloadable:
+            payload['downloadable'] = True
 
         with httpx.Client(timeout=30.0) as client:
-            response = client.post(url, headers=headers, json=payload)
+            response = client.post(
+                url,
+                headers=headers,
+                json=payload if payload else None,
+            )
 
         response.raise_for_status()
         body: dict[str, Any] = response.json()
@@ -483,6 +546,78 @@ class CFStreamConnector(CloudflareConnector):
         result = body.get('result') or {}
         token = result.get('token') or ''
         return token
+
+    def ensure_mp4_download_ready(self, video_uid: str) -> None:
+        """Ensure MP4 download exists for the video; create and poll until ready."""
+        if not self.account_id or not self.api_token:
+            raise ValueError('Stream connector missing account_id or api_token')
+
+        url = self.DOWNLOADS_URL_TEMPLATE.format(
+            account_id=self.account_id,
+            video_uid=video_uid,
+        )
+        headers = {'Authorization': f'Bearer {self.api_token}'}
+
+        with httpx.Client(timeout=30.0) as client:
+            create_resp = client.post(url, headers=headers)
+            create_resp.raise_for_status()
+            create_body: dict[str, Any] = create_resp.json()
+            if not create_body.get('success'):
+                errors = create_body.get('errors', [])
+                logger.error('Cloudflare Stream POST /downloads failed: %s', errors)
+                raise RuntimeError('Stream download request failed')
+
+            for _ in range(24):
+                get_resp = client.get(url, headers=headers)
+                get_resp.raise_for_status()
+                get_body: dict[str, Any] = get_resp.json()
+                if not get_body.get('success'):
+                    raise RuntimeError('Stream download status check failed')
+                result = get_body.get('result') or {}
+                default_info = result.get('default') or {}
+                status = default_info.get('status') or ''
+                if status == 'ready':
+                    return
+                if status == 'error':
+                    raise RuntimeError('Stream MP4 generation failed')
+                time.sleep(5)
+
+        raise RuntimeError('Stream MP4 download was not ready in time')
+
+    def get_mp4_download_url(
+        self,
+        video_uid: str,
+        *,
+        filename: str | None = None,
+        expires_in: int = 3600,
+    ) -> str:
+        """Return a signed URL for downloading the video as MP4."""
+        if not self.customer_subdomain:
+            raise ValueError('Stream connector missing customer_subdomain')
+
+        self.ensure_mp4_download_ready(video_uid)
+        token = self.create_signed_token(
+            video_uid,
+            expires_in=expires_in,
+            downloadable=True,
+        )
+        if not token:
+            raise RuntimeError('Failed to create download token')
+
+        base = f'https://{self.customer_subdomain}/{token}/downloads/default.mp4'
+        if filename:
+            # Cloudflare appends .mp4 automatically; param is the base name, max 120 chars.
+            stem = filename.rsplit('.', 1)[0] if '.' in filename else filename
+            safe = (
+                ''.join(
+                    c
+                    for c in stem[:120]
+                    if c in 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_'
+                )
+                or 'video'
+            )
+            return f'{base}?filename={safe}'
+        return base
 
     def get_thumbnail_image(
         self,
@@ -514,6 +649,11 @@ class CFStreamConnector(CloudflareConnector):
 
         with httpx.Client(timeout=30.0) as client:
             response = client.get(thumbnail_url)
+            if response.status_code == 424:
+                raise StreamVideoError(
+                    'Video processing failed. The file may be corrupted or in an unsupported format.',
+                    video_uid=video_uid,
+                )
             response.raise_for_status()
             logger.info(
                 'Cloudflare Stream thumbnail response: %s',

@@ -37,6 +37,12 @@ def configure_logging() -> None:
                 }
             },
             'root': {'level': log_level, 'handlers': ['console']},
+            # Suppress noisy HTTP/2 debug logs from httpx/httpcore (Supabase client).
+            'loggers': {
+                'httpx': {'level': 'INFO'},
+                'httpcore': {'level': 'INFO'},
+                'hpack': {'level': 'INFO'},
+            },
         }
     )
 

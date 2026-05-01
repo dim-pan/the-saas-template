@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 from enum import Enum
+from typing import Any
 from uuid import UUID
 
 from supabase import Client
@@ -50,3 +51,6 @@ class JobsHandler(DatabaseHandler[PublicJobs, PublicJobsInsert, PublicJobsUpdate
     ) -> PublicJobs | None:
         """Look up a job by external_id. When require_org=True (default), org-scoped and raises 404 if not found. When require_org=False, global lookup and returns None if not found."""
         return self.get_item(external_id, key='external_id', require_org=require_org)
+
+    def update_job_result_data(self, job_id: UUID, result_data: dict[str, Any]) -> PublicJobs:
+        return self.update_item(job_id, {'result_data': result_data})

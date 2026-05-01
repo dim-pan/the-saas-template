@@ -5,19 +5,24 @@ from fastapi import Depends, HTTPException, status
 
 from app.api.deps import get_supabase_client
 from app.auth.deps import get_principal, get_current_user, Principal
-from app.database.memberships import MembershipsHandler
+from app.database.memberships import MembershipRole, MembershipsHandler
 from app.database.organizations import OrganizationsHandler
 from app.database.types_autogen import PublicMemberships, PublicOrganizations, PublicUsers
 from app.database.users import UsersHandler
 from supabase import Client
 
-ROLE_HIERARCHY: tuple[str, ...] = ('member', 'admin', 'owner')
+ROLE_HIERARCHY: tuple[MembershipRole, ...] = (
+    MembershipRole.member,
+    MembershipRole.admin,
+    MembershipRole.owner,
+)
 
 
-def _role_level(role: str) -> int:
-    if role in ROLE_HIERARCHY:
-        return ROLE_HIERARCHY.index(role)
-    return -1
+def _role_level(role: str | MembershipRole) -> int:
+    try:
+        return ROLE_HIERARCHY.index(MembershipRole(role))
+    except ValueError:
+        return -1
 
 
 @dataclass
@@ -41,7 +46,7 @@ def require_org_membership(
     return membership
 
 
-def require_org_role(min_role: str):
+def require_org_role(min_role: MembershipRole):
     """Dependency factory: require principal to have at least min_role in this org. Returns OrgRoleContext."""
 
     min_level = _role_level(min_role)

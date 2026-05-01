@@ -13,6 +13,7 @@ from app.auth.deps import Principal, require_role
 from app.clients.sqs import SQSConnector
 from app.config import AWS_SQS_QUEUE_URL
 from app.database.jobs import JobsHandler, TaskStatus
+from app.database.memberships import MembershipRole
 from app.database.types_autogen import PublicJobs
 
 logger = logging.getLogger(__name__)
@@ -91,7 +92,7 @@ def create_job(
     organization_id: UUID,
     payload: CreateJobRequest,
     db: Client = Depends(get_supabase_client),
-    ctx: OrgRoleContext = Depends(require_org_role('member')),
+    ctx: OrgRoleContext = Depends(require_org_role(MembershipRole.member)),
 ) -> JobResult:
     if ctx.principal.kind == 'user':
         if ctx.user is None:
@@ -149,7 +150,7 @@ def create_job(
 def list_jobs(
     organization_id: UUID,
     db: Client = Depends(get_supabase_client),
-    ctx: OrgRoleContext = Depends(require_org_role('member')),
+    ctx: OrgRoleContext = Depends(require_org_role(MembershipRole.member)),
 ) -> JobListResult:
     jobs = JobsHandler(db, organization_id=organization_id)
     rows = jobs.list_items()
@@ -163,7 +164,7 @@ def get_job(
     organization_id: UUID,
     job_id: UUID,
     db: Client = Depends(get_supabase_client),
-    ctx: OrgRoleContext = Depends(require_org_role('member')),
+    ctx: OrgRoleContext = Depends(require_org_role(MembershipRole.member)),
 ) -> JobResult:
     jobs = JobsHandler(db, organization_id=organization_id)
     row = jobs.get_item(job_id)
@@ -176,7 +177,7 @@ def update_job_status(
     job_id: UUID,
     payload: UpdateJobStatusRequest,
     db: Client = Depends(get_supabase_client),
-    ctx: OrgRoleContext = Depends(require_org_role('member')),
+    ctx: OrgRoleContext = Depends(require_org_role(MembershipRole.member)),
 ) -> JobResult:
     jobs = JobsHandler(db, organization_id=organization_id)
     row = jobs.update_job_status(job_id, payload.status)
@@ -189,7 +190,7 @@ def update_job_external_id(
     job_id: UUID,
     payload: UpdateJobExternalIdRequest,
     db: Client = Depends(get_supabase_client),
-    ctx: OrgRoleContext = Depends(require_org_role('member')),
+    ctx: OrgRoleContext = Depends(require_org_role(MembershipRole.member)),
 ) -> JobResult:
     jobs = JobsHandler(db, organization_id=organization_id)
     row = jobs.update_item(job_id, {'external_id': payload.external_id})

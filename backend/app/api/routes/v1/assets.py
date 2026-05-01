@@ -16,6 +16,7 @@ from app.cloudflare.connectors import (
     AssetProvider,
 )
 from app.database.assets import AssetsHandler
+from app.database.memberships import MembershipRole
 from app.database.types_autogen import PublicAssets
 from app.utils.logger import get_logger
 
@@ -97,7 +98,7 @@ def get_cloudflare_connector_for_upload_body(
 async def list_assets(
     organization_id: UUID,
     db: Client = Depends(get_supabase_client),
-    ctx: OrgRoleContext = Depends(require_org_role('member')),
+    ctx: OrgRoleContext = Depends(require_org_role(MembershipRole.member)),
 ) -> list[PublicAssets]:
     assets_handler = AssetsHandler(db, organization_id=organization_id)
     if ctx.principal.kind == 'service':
@@ -114,7 +115,7 @@ async def get_asset(
     organization_id: UUID,
     asset_id: UUID,
     db: Client = Depends(get_supabase_client),
-    ctx: OrgRoleContext = Depends(require_org_role('member')),
+    ctx: OrgRoleContext = Depends(require_org_role(MembershipRole.member)),
 ) -> GetAssetResponse:
     assets_handler = AssetsHandler(db, organization_id=organization_id)
     asset = assets_handler.get_by_asset_id(asset_id)
@@ -147,7 +148,7 @@ async def create_upload(
     body: CreateUploadRequest,
     conn: CloudflareConnector = Depends(get_cloudflare_connector_for_upload_body),
     db: Client = Depends(get_supabase_client),
-    ctx: OrgRoleContext = Depends(require_org_role('member')),
+    ctx: OrgRoleContext = Depends(require_org_role(MembershipRole.member)),
 ) -> CreateUploadResponse:
     if ctx.user is None:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='User token required')
@@ -230,7 +231,7 @@ async def delete_asset(
     asset_id: UUID,
     organization_id: UUID,
     db: Client = Depends(get_supabase_client),
-    ctx: OrgRoleContext = Depends(require_org_role('member')),
+    ctx: OrgRoleContext = Depends(require_org_role(MembershipRole.member)),
 ) -> None:
     assets_handler = AssetsHandler(db, organization_id=organization_id)
     asset = assets_handler.get_by_asset_id(asset_id)
@@ -260,7 +261,7 @@ async def complete_upload(
     body: CompleteUploadRequest,
     conn: CloudflareConnector = Depends(get_cloudflare_connector_for_upload_body),
     db: Client = Depends(get_supabase_client),
-    ctx: OrgRoleContext = Depends(require_org_role('member')),
+    ctx: OrgRoleContext = Depends(require_org_role(MembershipRole.member)),
 ) -> CompleteUploadResponse:
     asset_id = body.asset_id
     if asset_id != upload_id:

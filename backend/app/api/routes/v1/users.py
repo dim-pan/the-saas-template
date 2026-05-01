@@ -6,6 +6,7 @@ from supabase import Client
 
 from app.api.deps import get_supabase_client
 from app.api.org_deps import OrgRoleContext, require_org_role
+from app.database.memberships import MembershipRole
 from app.database.types_autogen import PublicUsers
 from app.database.users import UsersHandler
 
@@ -30,7 +31,7 @@ def get_user(
     organization_id: UUID,
     user_id: UUID,
     db: Client = Depends(get_supabase_client),
-    ctx: OrgRoleContext = Depends(require_org_role('member')),
+    ctx: OrgRoleContext = Depends(require_org_role(MembershipRole.member)),
 ) -> UserResult:
     user = UsersHandler(db).get_item(user_id)
     return UserResult.model_validate(user, from_attributes=True)
@@ -42,7 +43,7 @@ def update_user(
     user_id: UUID,
     payload: UpdateUserRequest,
     db: Client = Depends(get_supabase_client),
-    ctx: OrgRoleContext = Depends(require_org_role('member')),
+    ctx: OrgRoleContext = Depends(require_org_role(MembershipRole.member)),
 ) -> UserResult:
     updated = UsersHandler(db).update_item(
         user_id, payload.model_dump(exclude_unset=True, mode='json')
@@ -55,7 +56,7 @@ def delete_user(
     organization_id: UUID,
     user_id: UUID,
     db: Client = Depends(get_supabase_client),
-    ctx: OrgRoleContext = Depends(require_org_role('member')),
+    ctx: OrgRoleContext = Depends(require_org_role(MembershipRole.member)),
 ) -> UserResult:
     updated = UsersHandler(db).delete_item(user_id)
     return UserResult.model_validate(updated, from_attributes=True)

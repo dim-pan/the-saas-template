@@ -468,6 +468,7 @@ class PublicJobs(BaseModel):
     finished_at: Optional[datetime.datetime] = Field(alias='finished_at')
     id: uuid.UUID = Field(alias='id')
     organization_id: uuid.UUID = Field(alias='organization_id')
+    result_data: dict[str, Any] = Field(alias='result_data')
     status: str = Field(alias='status')
     submitted_at: datetime.datetime = Field(alias='submitted_at')
     task: str = Field(alias='task')
@@ -482,6 +483,7 @@ class PublicJobsInsert(TypedDict):
     finished_at: NotRequired[Annotated[Optional[datetime.datetime], Field(alias='finished_at')]]
     id: NotRequired[Annotated[uuid.UUID, Field(alias='id')]]
     organization_id: Annotated[uuid.UUID, Field(alias='organization_id')]
+    result_data: NotRequired[Annotated[dict[str, Any], Field(alias='result_data')]]
     status: NotRequired[Annotated[str, Field(alias='status')]]
     submitted_at: NotRequired[Annotated[datetime.datetime, Field(alias='submitted_at')]]
     task: Annotated[str, Field(alias='task')]
@@ -496,6 +498,7 @@ class PublicJobsUpdate(TypedDict):
     finished_at: NotRequired[Annotated[Optional[datetime.datetime], Field(alias='finished_at')]]
     id: NotRequired[Annotated[uuid.UUID, Field(alias='id')]]
     organization_id: NotRequired[Annotated[uuid.UUID, Field(alias='organization_id')]]
+    result_data: NotRequired[Annotated[dict[str, Any], Field(alias='result_data')]]
     status: NotRequired[Annotated[str, Field(alias='status')]]
     submitted_at: NotRequired[Annotated[datetime.datetime, Field(alias='submitted_at')]]
     task: NotRequired[Annotated[str, Field(alias='task')]]

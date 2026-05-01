@@ -19,6 +19,7 @@ from stripe.params.billing_portal._session_create_params import (
 
 from app.api.deps import get_supabase_client
 from app.api.org_deps import OrgRoleContext, require_org_role
+from app.database.memberships import MembershipRole
 from app.database.organizations import OrganizationsHandler
 from app.database.stripe_catalog_items import StripeCatalogItemsHandler
 from app.database.stripe_webhook_events import StripeWebhookEventsHandler
@@ -189,7 +190,7 @@ def create_org_stripe_customer(
     organization_id: UUID,
     payload: CreateStripeCustomerRequest,
     db: Client = Depends(get_supabase_client),
-    ctx: OrgRoleContext = Depends(require_org_role('owner')),
+    ctx: OrgRoleContext = Depends(require_org_role(MembershipRole.owner)),
 ) -> CreateStripeCustomerResponse:
     if ctx.user is None:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='User token required')
@@ -226,7 +227,7 @@ def create_org_checkout_session(
     organization_id: UUID,
     payload: CreateCheckoutSessionRequest,
     db: Client = Depends(get_supabase_client),
-    ctx: OrgRoleContext = Depends(require_org_role('owner')),
+    ctx: OrgRoleContext = Depends(require_org_role(MembershipRole.owner)),
 ) -> CreateCheckoutSessionResponse:
     if ctx.user is None:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='User token required')
@@ -284,7 +285,7 @@ def create_org_billing_portal_session(
     organization_id: UUID,
     payload: CreateBillingPortalSessionRequest,
     db: Client = Depends(get_supabase_client),
-    ctx: OrgRoleContext = Depends(require_org_role('owner')),
+    ctx: OrgRoleContext = Depends(require_org_role(MembershipRole.owner)),
 ) -> CreateBillingPortalSessionResponse:
     if ctx.user is None:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='User token required')

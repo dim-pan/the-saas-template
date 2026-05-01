@@ -7,6 +7,7 @@ from app.api.deps import get_supabase_client
 from app.api.org_deps import OrgRoleContext, require_org_membership, require_org_role
 from app.auth.deps import Principal, require_role
 from app.database.handler import Filter
+from app.database.memberships import MembershipRole
 from app.database.organizations import OrganizationsHandler
 from app.database.types_autogen import PublicOrganizations
 from app.database.users import UsersHandler
@@ -103,7 +104,7 @@ def update_organization(
     organization_id: UUID,
     payload: UpdateOrganizationRequest,
     db: Client = Depends(get_supabase_client),
-    _ctx: OrgRoleContext = Depends(require_org_role('owner')),
+    _ctx: OrgRoleContext = Depends(require_org_role(MembershipRole.owner)),
 ) -> OrganizationResult:
     updated = OrganizationsHandler(db).update_item(
         organization_id, payload.model_dump(exclude_unset=True)

@@ -105,7 +105,7 @@ def test_admin_cannot_promote_to_owner() -> None:
     assert exc_info.value.status_code == 403
 
 
-def test_admin_can_promote_member_to_admin() -> None:
+def test_admin_cannot_promote_member_to_admin() -> None:
     organization_id = uuid4()
     member_membership_id = uuid4()
 
@@ -118,19 +118,19 @@ def test_admin_can_promote_member_to_admin() -> None:
         )
     ]
 
-    updated = memberships_routes.update_membership_role(
-        organization_id=organization_id,
-        membership_id=member_membership_id,
-        payload=memberships_routes.UpdateMembershipRoleRequest(role='admin'),
-        db=db,  # type: ignore[arg-type]
-        ctx=_admin_ctx(),
-    )
+    with pytest.raises(HTTPException) as exc_info:
+        memberships_routes.update_membership_role(
+            organization_id=organization_id,
+            membership_id=member_membership_id,
+            payload=memberships_routes.UpdateMembershipRoleRequest(role='admin'),
+            db=db,  # type: ignore[arg-type]
+            ctx=_admin_ctx(),
+        )
 
-    assert str(updated.id) == str(member_membership_id)
-    assert updated.role == 'admin'
+    assert exc_info.value.status_code == 403
 
 
-def test_admin_can_delete_admin_membership() -> None:
+def test_admin_cannot_delete_admin_membership() -> None:
     organization_id = uuid4()
     admin_membership_id = uuid4()
 
@@ -143,15 +143,15 @@ def test_admin_can_delete_admin_membership() -> None:
         )
     ]
 
-    deleted = memberships_routes.delete_membership(
-        organization_id=organization_id,
-        membership_id=admin_membership_id,
-        db=db,  # type: ignore[arg-type]
-        ctx=_admin_ctx(),
-    )
+    with pytest.raises(HTTPException) as exc_info:
+        memberships_routes.delete_membership(
+            organization_id=organization_id,
+            membership_id=admin_membership_id,
+            db=db,  # type: ignore[arg-type]
+            ctx=_admin_ctx(),
+        )
 
-    assert str(deleted.id) == str(admin_membership_id)
-    assert deleted.archived is True
+    assert exc_info.value.status_code == 403
 
 
 def test_update_membership_role_request_normalizes_role_to_lowercase() -> None:

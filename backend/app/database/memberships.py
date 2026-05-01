@@ -1,3 +1,4 @@
+from enum import StrEnum
 from uuid import UUID
 
 from fastapi import HTTPException, status
@@ -12,6 +13,12 @@ from app.database.types_autogen import (
 from app.utils.logger import get_logger
 
 logger = get_logger(__name__)
+
+
+class MembershipRole(StrEnum):
+    owner = 'owner'
+    admin = 'admin'
+    member = 'member'
 
 
 class MembershipsHandler(
@@ -45,7 +52,9 @@ class MembershipsHandler(
         return rows[0]
 
     def list_active_owners(self) -> list[PublicMemberships]:
-        return self.list_items(filters=[Filter(column='role', op='eq', value='owner')])
+        return self.list_items(
+            filters=[Filter(column='role', op='eq', value=MembershipRole.owner.value)]
+        )
 
     def has_another_active_owner(self, *, excluding_membership_id: UUID) -> bool:
         owners = self.list_active_owners()
