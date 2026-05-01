@@ -1,0 +1,23 @@
+# Engine gateway: FastAPI webhook server.
+# Use with Railway (or any Docker host) with root directory `engine` and Dockerfile path `Dockerfile.gateway`.
+# Railway injects PORT at runtime; default to 8080 if unset.
+FROM python:3.12-slim
+
+WORKDIR /app
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+
+# Install UV
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
+# Copy dependency manifests first
+COPY pyproject.toml uv.lock ./
+RUN uv sync --locked
+
+# Copy application code (src layout)
+COPY src ./src
+
+EXPOSE 8080
+
+# Listen on Railway's PORT (injected at runtime) or 8080
+CMD ["sh", "-c", "uv run uvicorn engine.gateway.main:app --host 0.0.0.0 --port ${PORT:-8080}"]

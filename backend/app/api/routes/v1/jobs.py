@@ -37,6 +37,10 @@ class UpdateJobStatusRequest(BaseModel):
     status: TaskStatus
 
 
+class UpdateJobResultDataRequest(BaseModel):
+    result_data: dict[str, Any]
+
+
 class WorkerTaskMessagePayload(BaseModel):
     """Payload shape for SQS message body"""
 
@@ -194,4 +198,17 @@ def update_job_external_id(
 ) -> JobResult:
     jobs = JobsHandler(db, organization_id=organization_id)
     row = jobs.update_item(job_id, {'external_id': payload.external_id})
+    return JobResult.model_validate(row, from_attributes=True)
+
+
+@org_level_router.patch('/{job_id}/result', response_model=JobResult)
+def update_job_result_data(
+    organization_id: UUID,
+    job_id: UUID,
+    payload: UpdateJobResultDataRequest,
+    db: Client = Depends(get_supabase_client),
+    ctx: OrgRoleContext = Depends(require_org_role(MembershipRole.member)),
+) -> JobResult:
+    jobs = JobsHandler(db, organization_id=organization_id)
+    row = jobs.update_job_result_data(job_id, payload.result_data)
     return JobResult.model_validate(row, from_attributes=True)

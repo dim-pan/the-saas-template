@@ -4,13 +4,11 @@ from typing import Any
 
 from fastapi import FastAPI, HTTPException, Request
 
+from engine.gateway.logging_setup import configure_engine_logging
 from engine.gateway.processors import BaseWebhookProcessor, register_processors
 from engine.shared.schemas import WebhookContext
 
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-)
+configure_engine_logging()
 
 app = FastAPI(title='The Engine Gateway')
 logger = logging.getLogger(__name__)

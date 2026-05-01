@@ -98,7 +98,9 @@ class BaseProcessor(ABC):
                 self.__class__.__name__,
                 error,
             )
-            return
+            raise ValueError(
+                f'Invalid payload for task={message.task} job_id={message.id}: {error}'
+            ) from error
 
         # Execute the task
         self.pre_process(message, payload)

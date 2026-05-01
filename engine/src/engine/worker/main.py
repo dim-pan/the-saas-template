@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import time
 
 from pydantic import ValidationError
 
@@ -42,10 +43,31 @@ def process_in_thread(msg: JobMessage) -> None:
 
 async def run_processor(msg: JobMessage, semaphore: asyncio.Semaphore) -> None:
     async with semaphore:
+        t0 = time.perf_counter()
         try:
             await asyncio.to_thread(process_in_thread, msg)
         except Exception as error:
-            logger.error('Error processing task %s: %s', msg.id, error)
+            logger.exception('Error processing task %s: %s', msg.id, error)
+            try:
+                await api.update_job_status(
+                    msg.id,
+                    msg.organization_id,
+                    TaskStatus.FAILED,
+                )
+                await api.update_job_result_data(
+                    msg.id,
+                    msg.organization_id,
+                    {'error': str(error)},
+                )
+                logger.info('Updated job %s status to failed', msg.id)
+            except Exception as update_error:
+                logger.exception(
+                    'Failed to report job %s as failed to backend: %s',
+                    msg.id,
+                    update_error,
+                )
+        finally:
+            logger.info('Task %s took %.2fs', msg.id, time.perf_counter() - t0)
 
 
 async def main():
