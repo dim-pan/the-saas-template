@@ -51,23 +51,42 @@ If you find this useful, **drop a star** - it helps a lot.
 
 ## Quick start
 
+Each command below is a long-running process — run each in its own terminal, in this order:
+
 ```bash
 # 1. Start Supabase (from /backend)
 cd backend && supabase start
 
 # 2. Backend (reads backend/.env)
-make dev                                  # http://localhost:8000
+cd backend && make dev                    # http://localhost:8000
 
 # 3. Frontend (reads frontend/.env)
-cd ../frontend && pnpm install && pnpm dev    # http://localhost:5173
+cd frontend && pnpm install && pnpm dev   # http://localhost:5173
 
 # 4. (Optional) Engine — async jobs + webhook gateway
-cd ../engine
-make dev-gateway                          # http://localhost:8001
-make dev-worker                           # SQS worker
+cd engine && make dev-gateway             # http://localhost:8001
+cd engine && make dev-worker              # SQS worker (separate terminal)
 ```
 
 Copy `.env.example` → `.env` in each service first. That's it.
+
+> **First-time setup:** `backend/` and `engine/` ship with a `.envrc` for [direnv](https://direnv.net/). On first run you'll see `direnv: error ... .envrc is blocked`. Approve them once:
+>
+> ```bash
+> cd backend && direnv allow
+> cd ../engine && direnv allow
+> ```
+
+### One-shot tmux launcher
+
+Prefer not to juggle terminals? `scripts/dev-tmux.sh` spins up the whole stack in a single tmux session (Supabase → backend → frontend → engine gateway + worker), gating the app/engine panes on Supabase being ready:
+
+```bash
+./scripts/dev-tmux.sh                       # no ngrok
+./scripts/dev-tmux.sh --ngrok <your-url>    # adds an ngrok pane bound to :8000
+```
+
+Requires `tmux`. Switch windows with `Ctrl-b n` / `Ctrl-b p`; tear down with `tmux kill-session -t sst`.
 
 ### Or with Docker Compose
 
